@@ -1,0 +1,5 @@
+scgi_port = 127.0.0.1:5000
+directory = ~/download
+session = ~/rtorrent-session
+encoding_list = UTF-8
+
