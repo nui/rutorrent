@@ -71,6 +71,6 @@ COPY docker-entrypoint.sh /
 COPY start.sh /
 
 VOLUME ["/home/torrent/download", "/home/torrent/watch", "/home/torrent/rtorrent-session"]
-ENTRYPOINT /docker-entrypoint.sh
+ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["/start.sh"]
 
