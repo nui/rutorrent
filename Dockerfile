@@ -70,7 +70,7 @@ RUN chown -R torrent. /home/torrent
 COPY docker-entrypoint.sh /
 COPY start.sh /
 
-VOLUME ["/home/torrent/download", "/home/torrent/watch"]
+VOLUME ["/home/torrent/download", "/home/torrent/watch", "/home/torrent/rtorrent-session"]
 ENTRYPOINT /docker-entrypoint.sh
 CMD ["/start.sh"]
 
