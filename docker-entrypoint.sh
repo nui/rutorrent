@@ -8,9 +8,5 @@ reset_permission() {
 
 reset_permission
 
-if [ $# -gt 0 ]; then
-    exec "$@"
-else
-    exec /start.sh
-fi
+exec "$@"
 

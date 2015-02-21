@@ -16,6 +16,7 @@ RUN \
     add-apt-repository -y ppa:nginx/stable &&\
     rm -rf /var/lib/apt/lists/*
 
+
 RUN \
     # install required libraries
     apt-get update &&\
@@ -33,6 +34,14 @@ RUN \
         unzip\
         wget &&\
     rm -rf /var/lib/apt/lists/*
+
+# grab gosu for easy step-down from root
+RUN gpg --keyserver pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4
+RUN curl -o /usr/local/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture)" \
+    && curl -o /usr/local/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture).asc" \
+    && gpg --verify /usr/local/bin/gosu.asc \
+    && rm /usr/local/bin/gosu.asc \
+    && chmod +x /usr/local/bin/gosu
 
 RUN \
     cd /var/www &&\
@@ -67,10 +76,10 @@ RUN mkdir /home/torrent/rtorrent-session &&\
     chgrp www-data /home/torrent/rtorrent-session
 RUN chown -R torrent. /home/torrent
 
-COPY docker-entrypoint.sh /
-COPY start.sh /
+COPY docker-*.sh /
+COPY rutorrent.sh /
 
 VOLUME ["/home/torrent/download", "/home/torrent/watch", "/home/torrent/rtorrent-session"]
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["/start.sh"]
+CMD ["/docker-start.sh"]
 
