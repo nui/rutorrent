@@ -24,8 +24,9 @@ LOCK_FILE="/torrent/download/.rtorrent.lock"
     TMUX_SERVER_PID="$("$TMUX_BIN" run-shell 'echo $TMUX' | cut -d ',' -f 2)"
     set +x
     # wait until tmux server died
-    while kill -0 $TMUX_SERVER_PID > /dev/null 2>&1; do
-        sleep 1
+    while sleep 1; do
+        # exit if cannot send signal to tmux's server
+        kill -0 $TMUX_SERVER_PID > /dev/null 2>&1 || exit 0
     done
 ) 9>$LOCK_FILE 2>&1
 
