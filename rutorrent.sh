@@ -5,7 +5,7 @@ export HOME=~torrent
 cd "$HOME"
 
 TMUX_BIN=${TMUX_BIN:-/usr/bin/tmux}
-LOCK_FILE="$HOME/download/.rtorrent.lock"
+LOCK_FILE="/torrent/download/.rtorrent.lock"
 
 (
     # Make sure that only an instance of rtorrent form this container
@@ -17,7 +17,7 @@ LOCK_FILE="$HOME/download/.rtorrent.lock"
 
     # rtorrent locking does not play well with docker container
     # since we use external lock, remove silly lock file
-    rm -f "$HOME/rtorrent-session/rtorrent.lock"
+    rm -f "$HOME/.rtorrentsession/rtorrent.lock"
 
     "$TMUX_BIN" new-session -d rtorrent
 
