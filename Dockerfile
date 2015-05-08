@@ -1,86 +1,73 @@
 FROM ubuntu:14.04
-# FROM nuimk/ubuntu:14.04
 
-ENV RUTORRENT_URI=https://bintray.com/artifact/download/novik65/generic/rutorrent-3.6.tar.gz\
-    RUTORRENT_SHA1=5870cddef717c83560e89aee56f2b7635ed1c90d\
-    RUTORRENT_PLUGINS_URI=https://bintray.com/artifact/download/novik65/generic/plugins-3.6.tar.gz\
-    RUTORRENT_PLUGINS_SHA1=617625cda45c689f5505fbfdfb6cc4000bc6b1d9
+ENV RUTORRENT_URI='https://bintray.com/artifact/download/novik65/generic/ruTorrent-3.7.zip' \
+    RUTORRENT_SHA1='4be55a9038ae9c9eb6052cb65ed6139a591a49a2'
 
-RUN \
-    locale-gen en_US.UTF-8 &&\
-    update-locale LANG=en_US.UTF-8 &&\
-    apt-get update &&\
-    apt-get -y install software-properties-common &&\
+RUN locale-gen en_US.UTF-8 \
+    && update-locale LANG=en_US.UTF-8 \
+    && apt-get update \
+    && apt-get -y install software-properties-common \
     # ffmpeg ppa
-    add-apt-repository -y ppa:mc3man/trusty-media &&\
-    add-apt-repository -y ppa:nginx/stable &&\
-    rm -rf /var/lib/apt/lists/*
+    && add-apt-repository -y ppa:mc3man/trusty-media \
+    && add-apt-repository -y ppa:nginx/stable \
+    && rm -rf /var/lib/apt/lists/*
 
 
-RUN \
-    # install required libraries
-    apt-get update &&\
-    apt-get -y install\
-        curl\
-        ffmpeg\
-        mediainfo\
-        nginx\
-        php5-cli\
-        php5-fpm\
-        php5-geoip\
-        rtorrent\
-        tmux\
-        unrar-free\
-        unzip\
-        wget &&\
-    rm -rf /var/lib/apt/lists/*
+# install required libraries
+RUN apt-get update \
+    && apt-get -y install \
+        curl \
+        ffmpeg \
+        mediainfo \
+        nginx \
+        php5-cli \
+        php5-fpm \
+        php5-geoip \
+        rtorrent \
+        tmux \
+        unrar-free \
+        unzip \
+        wget \
+    # remove default sites
+    && rm /etc/nginx/sites-available/* /etc/nginx/sites-enabled/* \
+    && rm -rf /var/lib/apt/lists/*
+
+# copy nginx config
+COPY nginx-rutorrent /etc/nginx/sites-enabled/rutorrent
 
 # grab gosu for easy step-down from root
-RUN gpg --keyserver pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4
-RUN curl -o /usr/local/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture)" \
+RUN gpg --keyserver pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
+    && curl -o /usr/local/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture)" \
     && curl -o /usr/local/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/1.2/gosu-$(dpkg --print-architecture).asc" \
     && gpg --verify /usr/local/bin/gosu.asc \
     && rm /usr/local/bin/gosu.asc \
     && chmod +x /usr/local/bin/gosu
 
-RUN \
-    cd /var/www &&\
+RUN cd /var/www \
     # install rutorrent
-    wget -q -O rutorrent.tar.gz $RUTORRENT_URI &&\
-    echo "$RUTORRENT_SHA1  rutorrent.tar.gz" | sha1sum -c - &&\
-    tar -xf rutorrent.tar.gz &&\
-    rm rutorrent.tar.gz &&\
-    # install rutorrent plugins
-    cd rutorrent &&\
-    wget -q -O plugins.tar.gz $RUTORRENT_PLUGINS_URI &&\
-    echo "$RUTORRENT_PLUGINS_SHA1  plugins.tar.gz" | sha1sum -c - &&\
-    tar xf plugins.tar.gz &&\
-    rm plugins.tar.gz &&\
+    && wget -qO rutorrent.zip $RUTORRENT_URI \
+    && echo "$RUTORRENT_SHA1  rutorrent.zip" | sha1sum -c - \
+    && unzip rutorrent.zip \
+    && mv ruTorrent-master rutorrent \
+    && rm rutorrent.zip \
     # correct files permission
-    chmod -R 755 /var/www &&\
+    && chmod -R 755 /var/www \
     # fix curl not found
-    sed -i 's#\(\s*"curl"\s*=>\s*'"'"'\)''\('"'"'.*\)#\1/usr/bin/curl\2#g' /var/www/rutorrent/conf/config.php &&\
-    chown -R www-data. /var/www
+    && sed -i 's#\(\s*"curl"\s*=>\s*'"'"'\)''\('"'"'.*\)#\1/usr/bin/curl\2#g' /var/www/rutorrent/conf/config.php \
+    && chown -R www-data. /var/www
 
-# remove default nginx config
-RUN rm /etc/nginx/sites-available/* &&\
-    rm /etc/nginx/sites-enabled/*
-# add nginx config for rutorrent
-COPY nginx /etc/nginx
-RUN ln -s /etc/nginx/sites-available/rutorrent /etc/nginx/sites-enabled/rutorrent
+RUN mkdir /torrent \
+    && adduser --quiet --disabled-password --home /torrent/home --gecos "" --uid 1000 torrent
 
-RUN mkdir /torrent
-RUN adduser --quiet --disabled-password --home /torrent/home --gecos "" --uid 1000 torrent
 COPY rtorrent.rc /torrent/home/.rtorrent.rc
-RUN cd /torrent &&\
-    mkdir download watch home/.rtorrentsession &&\
-    chown -R torrent. /torrent &&\
-    chgrp www-data home/.rtorrentsession
+RUN cd /torrent \
+    && mkdir download watch home/.rtorrentsession \
+    && chown -R torrent. /torrent \
+    && chgrp www-data home/.rtorrentsession
 
-COPY docker-*.sh /
-COPY rutorrent.sh /
+COPY docker-* rutorrent.sh /
 
 VOLUME ["/torrent/home", "/torrent/download", "/torrent/watch"]
-ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["/docker-start.sh"]
+ENTRYPOINT ["/docker-entrypoint"]
+CMD ["/docker-start"]
 
