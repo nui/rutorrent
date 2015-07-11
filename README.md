@@ -24,9 +24,7 @@ run below command
 If you wonder why script command is necessary, see this https://github.com/docker/docker/issues/728.
 
 ```Shell
-docker exec -it rutorrent env TERM=xterm script -q /dev/null
-su - torrent
-tmux attach
+docker exec -u torrent -it rutorrent env TERM=xterm script -q -c 'tmux attach' /dev/null
 ```
 
 For simplicity, no authentication required to access rutorrent page.
