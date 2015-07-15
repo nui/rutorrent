@@ -1,31 +1,31 @@
 # rtorrent + rutorrent
 
-## Run a data container
-rtorrent configuration and session files will be keep in
-this data container.
-```Shell
-docker run --name rutorrent-data nuimk/rutorrent /bin/true
-```
+## Usage
 
-## Run rutorrent
+Pick a folder to store downloaded files, for example, `~/torrent` then run following commands
 
-Mount your torrent data directory to /torrent/download. everything under this
-folder will be changed the owner to 1000.
-```Shell
-docker run -d --name rutorrent --volumes-from rutorrent-data \
-    -v ~/download:/torrent/download \
+```sh
+docker run -d --name rutorrent -v ~/torrent:/torrent/download \
     -p 80:80 nuimk/rutorrent
 ```
 
-#Attach tmux
+Optional, start a data container to keep rtorrent configuration and session files
+```sh
+docker run --name rutorrent-data --volumes-from rutorrent tianon/true
+```
+
+
+## Access rtorrent
+
 rtorrent is running inside tmux session. If you want to attach to tmux session, 
 run below command
 
-If you wonder why script command is necessary, see this https://github.com/docker/docker/issues/728.
 
-```Shell
+```sh
 docker exec -u torrent -it rutorrent env TERM=xterm script -q -c 'tmux attach' /dev/null
 ```
+
+If you wonder why script command is necessary, see this https://github.com/docker/docker/issues/728.
 
 For simplicity, no authentication required to access rutorrent page.
 
