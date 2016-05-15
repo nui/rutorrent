@@ -1,7 +1,7 @@
 FROM ubuntu:14.04
 
-ENV RUTORRENT_URI='https://bintray.com/artifact/download/novik65/generic/ruTorrent-3.7.zip' \
-    RUTORRENT_SHA1='4be55a9038ae9c9eb6052cb65ed6139a591a49a2'
+ARG RUTORRENT_URI='https://bintray.com/artifact/download/novik65/generic/ruTorrent-3.7.zip'
+ARG RUTORRENT_SHA1='4be55a9038ae9c9eb6052cb65ed6139a591a49a2'
 
 RUN locale-gen en_US.UTF-8 \
     && update-locale LANG=en_US.UTF-8 \
@@ -37,8 +37,8 @@ COPY nginx-rutorrent /etc/nginx/sites-enabled/rutorrent
 
 # grab gosu for easy step-down from root
 RUN gpg --keyserver pool.sks-keyservers.net --recv-keys B42F6819007F00F88E364FD4036A9C25BF357DD4 \
-    && curl -o /usr/local/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/1.4/gosu-$(dpkg --print-architecture)" \
-    && curl -o /usr/local/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/1.4/gosu-$(dpkg --print-architecture).asc" \
+    && curl -o /usr/local/bin/gosu -SL "https://github.com/tianon/gosu/releases/download/1.9/gosu-$(dpkg --print-architecture)" \
+    && curl -o /usr/local/bin/gosu.asc -SL "https://github.com/tianon/gosu/releases/download/1.9/gosu-$(dpkg --print-architecture).asc" \
     && gpg --verify /usr/local/bin/gosu.asc \
     && rm /usr/local/bin/gosu.asc \
     && chmod +x /usr/local/bin/gosu
