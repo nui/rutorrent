@@ -1,12 +1,12 @@
 #!/bin/sh
 set -ex
 
-reset_permission() {
+reset_permissions() {
     chown -R torrent. /torrent/download
     chown -R torrent. /torrent/watch
 }
 
-reset_permission
+reset_permissions
 
 exec "$@"
 

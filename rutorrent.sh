@@ -20,13 +20,6 @@ LOCK_FILE="/torrent/download/.rtorrent.lock"
     rm -f "$HOME/.rtorrentsession/rtorrent.lock"
 
     "$TMUX_BIN" new-session -d rtorrent
-
-    TMUX_SERVER_PID="$("$TMUX_BIN" run-shell 'echo $TMUX' | cut -d ',' -f 2)"
-    set +x
-    # wait until tmux server died
-    while sleep 1; do
-        # exit if cannot send signal to tmux's server
-        kill -0 $TMUX_SERVER_PID > /dev/null 2>&1 || exit 0
-    done
+    "$TMUX_BIN" wait-for server-terminated
 ) 9>$LOCK_FILE 2>&1
 
